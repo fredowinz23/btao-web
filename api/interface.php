@@ -8,37 +8,6 @@ function category_interface($row){
   return $item;
 }
 
-function program_interface($row){
-
-  $category = category()->get("Id=$row->categoryId");
-  $categoryObj = category_interface($category);
-
-  $item = array();
-  $item["id"] = $row->Id;
-  $item["title"] = $row->title;
-  $item["date"] = $row->date;
-  $item["time"] = $row->time;
-  $item["description"] = $row->description;
-  $item["category"] = $categoryObj;
-  $item["address"] = $row->address;
-  $item["notes"] = $row->notes;
-  $item["maxVolunteer"] = $row->maxVolunteer;
-  $item["amountSpent"] = $row->amountSpent;
-  $item["status"] = $row->status;
-  return $item;
-}
-
-function joiner_interface($row){
-
-  $program = program()->get("Id=$row->programId");
-  $programObj = program_interface($program);
-
-  $item = array();
-  $item["id"] = $row->Id;
-  $item["program"] = $programObj;
-  return $item;
-}
-
 
 function user_interface($row){
   $item = array();
@@ -62,6 +31,25 @@ function driver_interface($row){
   $item["color"] = $row->color;
   $item["brand"] = $row->brand;
   $item["model"] = $row->model;
+  return $item;
+}
+
+
+function violation_interface($row){
+  $item = array();
+  $item["id"] = $row->Id;
+  $item["name"] = $row->name;
+  $item["amount"] = $row->amount;
+  return $item;
+}
+
+function penalty_item_interface($row){
+  $violation = violation()->get("Id=$row->violationId");
+  $violationObj = violation_interface($violation);
+
+  $item = array();
+  $item["id"] = $row->Id;
+  $item["violation"] = $violationObj;
   return $item;
 }
 ?>
