@@ -2,36 +2,24 @@
   $ROOT_DIR="../";
   include $ROOT_DIR . "templates/header.php";
 
-  $driverId = $_GET["driverId"];
-  $driver = driver()->get("Id=$driverId");
-
-
-  $status = get_query_string("status", "Pending");
-
-  $driver_penalty_list = driver_penalty()->list("driverId=$driverId and status='$status'");
-  $violation_list = violation()->list();
-
-
-  $pendingActive = "";
-  $paidActive = "";
-
-  if ($status=="Pending") {
-    $pendingActive = "active";
-  }
-  if ($status=="Paid") {
-    $paidActive = "active";
-  }
+  $zone_list = zone()->list();
 ?>
 
+
+<h2>Zone Option List</h2>
 
           <div class="widget-content searchable-container list">
             <div class="card card-body">
               <div class="row">
                 <div class="col-md-4 col-xl-3">
+                  <form class="position-relative">
+                    <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Zone..." />
+                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+                  </form>
                 </div>
                 <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
                   <a href="javascript:void(0)" id="btn-add-contact" class="btn btn-info d-flex align-items-center">
-                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Violation
+                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Zone
                   </a>
                 </div>
               </div>
@@ -39,25 +27,21 @@
 
             <!-- Modal -->
             <div class="modal fade" id="violationModal" tabindex="-1" role="dialog" aria-labelledby="addContactModalTitle" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+              <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                   <div class="modal-header d-flex align-items-center">
-                    <h5 class="modal-title">Violation Form</h5>
+                    <h5 class="modal-title">Zone Form</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
-                  <form action="process.php?action=driver-violation-add" id="addContactModalTitle" method="post">
+                  <form action="process.php?action=zone-save" id="addContactModalTitle" method="post">
                   <div class="modal-body">
-                    <input type="hidden" name="driverId" value="<?=$driverId;?>">
-
-                      <b>Check violations:</b>
-                      <div class="row">
-                    <?php foreach ($violation_list as $row): ?>
-                      <div class="col-6">
-                          <input type="checkbox" name="violation[]" value="<?=$row->Id?>"> <?=$row->name;?> (<?=$row->amount;?>)
+                    <div class="add-contact-box">
+                      <div class="add-contact-content">
+                        <input type="hidden" name="Id" id="c-id" class="form-control" placeholder="Name" />
+                        <b>Name</b>
+                        <input type="text" name="name" id="c-name" class="form-control" placeholder="Name" required/>
                       </div>
-                    <?php endforeach; ?>
                     </div>
-
                   </div>
                   <div class="modal-footer">
                     <button name="form-type" value="add" id="btn-add" class="btn btn-success rounded-pill px-4">Add</button>
@@ -69,20 +53,11 @@
               </div>
             </div>
             <div class="card card-body">
-              <ul class="nav nav-tabs">
-              <li class="nav-item">
-                <a class="nav-link <?=$pendingActive?>" aria-current="page" href="?driverId=<?=$driverId?>&status=Pending">Pending</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link <?=$paidActive?>" href="?driverId=<?=$driverId?>&status=Paid">Paid</a>
-              </li>
-            </ul>
               <div class="table-responsive">
                 <table class="table search-table align-middle text-nowrap">
                   <thead class="header-item">
                     <th>#</th>
-                    <th>Date</th>
-                    <th>Officer</th>
+                    <th>Zone</th>
                     <th width="10%">Action</th>
                   </thead>
                   <tbody>
@@ -90,8 +65,7 @@
 
                     <?php
                     $count = 0;
-                    foreach ($driver_penalty_list as $row):
-                      $officer = account()->get("Id=$row->officerId");
+                    foreach ($zone_list as $row):
                       $count += 1;
                        ?>
 
@@ -100,7 +74,7 @@
                         <div class="d-flex align-items-center">
                           <div class="ms-3">
                             <div class="user-meta-info">
-                              <h6 class="user-name mb-0" data-id="<?=$row->Id;?>" data-name="<?=$row->name;?>" data-amount="<?=$row->amount;?>"><?=$count;?>. </h6>
+                              <h6 class="user-name mb-0" data-id="<?=$row->Id;?>" data-name="<?=$row->name;?>"><?=$count;?>.</h6>
                             </div>
                           </div>
                         </div>
@@ -109,26 +83,17 @@
                           <div class="d-flex align-items-center">
                             <div class="ms-3">
                               <div class="user-meta-info">
-                                <h6 class="user-name mb-0"><?=$row->dateAdded;?></h6>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div class="d-flex align-items-center">
-                            <div class="ms-3">
-                              <div class="user-meta-info">
-                                <h6 class="user-name mb-0"><?=$officer->firstName;?> <?=$officer->lastName;?></h6>
+                                <h6 class="user-name mb-0"><?=$row->name;?></h6>
                               </div>
                             </div>
                           </div>
                         </td>
                       <td>
                         <div class="action-btn">
-                          <a href="driver-violation-detail.php?pdId=<?=$row->Id;?>" class="text-info btn btn-primary">
+                          <a href="javascript:void(0)" class="text-info btn btn-primary edit">
                             View
                           </a>
-                          <a href="process.php?action=violation-delete&Id=<?=$row->Id?>" class="text-dark ms-2 btn btn-danger">
+                          <a href="process.php?action=zone-delete&Id=<?=$row->Id?>" class="text-dark ms-2 btn btn-danger">
                             Delete
                           </a>
                         </div>

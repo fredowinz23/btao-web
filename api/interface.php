@@ -14,6 +14,7 @@ function user_interface($row){
   $item["id"] = $row->Id;
   $item["firstName"] = $row->firstName;
   $item["lastName"] = $row->lastName;
+  $item["officerBadge"] = $row->officerBadge;
   return $item;
 }
 
@@ -27,10 +28,24 @@ function driver_interface($row){
   $item["address"] = $row->address;
   $item["birthday"] = $row->birthday;
   $item["licenseNumber"] = $row->licenseNumber;
+  return $item;
+}
+
+
+function vehicle_interface($row){
+  $item = array();
+  $item["id"] = $row->Id;
   $item["plateNumber"] = $row->plateNumber;
   $item["color"] = $row->color;
   $item["brand"] = $row->brand;
   $item["model"] = $row->model;
+  return $item;
+}
+
+function zone_interface($row){
+  $item = array();
+  $item["id"] = $row->Id;
+  $item["name"] = $row->name;
   return $item;
 }
 

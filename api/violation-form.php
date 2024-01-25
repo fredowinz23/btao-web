@@ -8,8 +8,18 @@ $response = "";
 if (isset($_POST["driverPenaltyId"])) {
   $dpId = $_POST["driverPenaltyId"];
   $driverPenalty = driver_penalty()->get("Id=$dpId");
-  $driver = driver()->get("Id=$driverPenalty->driverId");
-  $driverObj = driver_interface($driver);
+  if ($driverPenalty->type=="Driver") {
+    $driver = driver()->get("Id=$driverPenalty->referenceId");
+    $driverObj = driver_interface($driver);
+    $json["driver"] = $driverObj;
+  }
+  if ($driverPenalty->type=="Vehicle") {
+    $vehicle = vehicle()->get("Id=$driverPenalty->referenceId");
+    $vehicleObj = vehicle_interface($vehicle);
+    $json["vehicle"] = $vehicleObj;
+  }
+  $officer = account()->get("Id=$driverPenalty->officerId");
+  $officerObj = user_interface($officer);
 
   $violation_list = array();
   foreach (violation()->list() as $row) {
@@ -24,8 +34,12 @@ if (isset($_POST["driverPenaltyId"])) {
   }
 }
 
+$totalViolation = driver_penalty()->count("referenceId=$driverPenalty->referenceId and type='$driverPenalty->type'");
+
 $json["driverPenaltyId"] = $_POST["driverPenaltyId"];
-$json["driver"] = $driverObj;
+$json["type"] = $driverPenalty->type;
+$json["officer"] = $officer;
+$json["totalViolation"] = $totalViolation;
 $json["violation_list"] = $violation_list;
 $json["penalty_item_list"] = $penalty_item_list;
 $json["success"] = $success;

@@ -2,23 +2,23 @@
   $ROOT_DIR="../";
   include $ROOT_DIR . "templates/header.php";
 
-  $driver_list = driver()->list();
+  $vehicle_list = vehicle()->list();
 ?>
 
-<h2>Driver's Records</h2>
+<h2>Vehicle's Records</h2>
       <div class="widget-content searchable-container list">
         <!-- --------------------- start Contact ---------------- -->
         <div class="card card-body">
           <div class="row">
             <div class="col-md-4 col-xl-3">
               <form class="position-relative">
-                <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Driver..." />
+                <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Vehicle..." />
                 <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
               </form>
             </div>
             <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
               <a href="javascript:void(0)" id="btn-add-contact" class="btn btn-info d-flex align-items-center">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Driver
+                <i class="ti ti-users text-white me-1 fs-5"></i> Add Vehicle
               </a>
             </div>
           </div>
@@ -32,45 +32,32 @@
                 <h5 class="modal-title">Driver</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <form action="process.php?action=driver-save" id="addContactModalTitle" method="post">
+              <form action="process.php?action=vehicle-save" id="addContactModalTitle" method="post">
               <div class="modal-body">
                 <div class="add-contact-box">
                   <div class="add-contact-content">
                     <div class="row">
-                      <div class="col-md-5">
+                      <div class="col-md-4">
                         <div class="mb-3 contact-name">
-                          <input type="hidden" name="Id" id="c-id"/>
-                          <input type="text" name="firstName" id="c-firstname" class="form-control" placeholder="First Name" required/>
-                          <span class="validation-text text-danger"></span>
-                        </div>
-                      </div>
-                      <div class="col-md-5">
-                        <div class="mb-3 contact-name">
-                          <input type="text" name="lastName" id="c-lastname" class="form-control" placeholder="Last Name" required/>
-                          <span class="validation-text text-danger"></span>
-                        </div>
-                      </div>
-                      <div class="col-md-2">
-                        <div class="mb-3 contact-name">
-                          <input type="text" name="middleInitial" id="c-middleInitial" class="form-control" placeholder="M.I." required/>
-                          <span class="validation-text text-danger"></span>
-                        </div>
-                      </div>
-                      <div class="col-md-12">
-                        <div class="mb-3 contact-name">
-                          <input type="text" name="address" id="c-address" class="form-control" placeholder="Address" required/>
+                          <input type="text" name="plateNumber" id="c-plateNumber" class="form-control" placeholder="Plate Number" required/>
                           <span class="validation-text text-danger"></span>
                         </div>
                       </div>
                       <div class="col-md-4">
                         <div class="mb-3 contact-name">
-                          <input type="date" name="birthday" id="c-birthday" class="form-control" placeholder="Birthday" required/>
+                          <input type="text" name="color" id="c-color" class="form-control" placeholder="Color" required/>
                           <span class="validation-text text-danger"></span>
                         </div>
                       </div>
                       <div class="col-md-4">
                         <div class="mb-3 contact-name">
-                          <input type="text" name="licenseNumber" id="c-licenseNumber" class="form-control" placeholder="License Number" required/>
+                          <input type="text" name="brand" id="c-brand" class="form-control" placeholder="Brand" required/>
+                          <span class="validation-text text-danger"></span>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3 contact-name">
+                          <input type="text" name="model" id="c-carModel" class="form-control" placeholder="Model" required/>
                           <span class="validation-text text-danger"></span>
                         </div>
                       </div>
@@ -92,10 +79,10 @@
             <table class="table search-table align-middle text-nowrap">
               <thead class="header-item">
                 <th>#</th>
-                <th>Driver</th>
-                <th>License #</th>
-                <th>Address</th>
-                <th>Birthday</th>
+                <th>Plate #</th>
+                <th>Color</th>
+                <th>Brand</th>
+                <th>Model</th>
                 <th width="10%">Action</th>
               </thead>
               <tbody>
@@ -103,7 +90,7 @@
 
                 <?php
                 $count = 0;
-                foreach ($driver_list as $row):
+                foreach ($vehicle_list as $row):
                   $count += 1;
                    ?>
 
@@ -133,7 +120,7 @@
                       <div class="d-flex align-items-center">
                         <div class="ms-3">
                           <div class="user-meta-info">
-                            <h6 class="mb-0"><?=$row->firstName;?> <?=$row->middleInitial;?>. <?=$row->lastName;?></h6>
+                            <h6 class="mb-0"><?=$row->plateNumber;?></h6>
                           </div>
                         </div>
                       </div>
@@ -142,38 +129,38 @@
                         <div class="d-flex align-items-center">
                           <div class="ms-3">
                             <div class="user-meta-info">
-                              <h6 class="mb-0"><?=$row->licenseNumber;?></h6>
+                              <h6 class="mb-0"><?=$row->color;?></h6>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="ms-3">
-                            <div class="user-meta-info">
-                              <h6 class="mb-0"><?=$row->address;?></h6>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                              <div class="user-meta-info">
+                                <h6 class="mb-0"><?=$row->brand;?></h6>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="ms-3">
-                            <div class="user-meta-info">
-                              <h6 class="mb-0"><?=$row->birthday;?></h6>
+                        </td>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <div class="ms-3">
+                                <div class="user-meta-info">
+                                  <h6 class="mb-0"><?=$row->model;?></h6>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </td>
+                          </td>
                   <td>
                     <div class="action-btn">
-                      <a href="driver-vehicle-violation.php?referenceId=<?=$row->Id;?>&type=Driver" class="edit btn btn-sm btn-success">
+                      <a href="driver-vehicle-violation.php?referenceId=<?=$row->Id;?>&type=Vehicle" class="edit btn btn-sm btn-success">
                         Violation
                       </a>
                       <a href="javascript:void(0)" class="edit btn btn-sm btn-primary">
                         View
                       </a>
-                      <a href="process.php?action=driver-delete&Id=<?=$row->Id;?>" class="btn btn-danger btn-sm">
+                      <a href="process.php?action=vehicle-delete&Id=<?=$row->Id;?>" class="btn btn-danger btn-sm">
                         Delete
                       </a>
                     </div>

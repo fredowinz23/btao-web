@@ -11,6 +11,10 @@ switch ($action) {
 		driver_violation_add();
 		break;
 
+	case 'reset-password' :
+		reset_password();
+		break;
+
 	case 'account-save' :
 		account_save();
 		break;
@@ -27,20 +31,66 @@ switch ($action) {
 		driver_save();
 		break;
 
+	case 'vehicle-save' :
+		vehicle_save();
+		break;
+
 	case 'violation-save' :
 		violation_save();
+		break;
+
+	case 'zone-delete' :
+		zone_delete();
+		break;
+
+	case 'zone-save' :
+		zone_save();
 		break;
 
 	case 'violation-delete' :
 		violation_delete();
 		break;
 
+	case 'driver-penalty-delete' :
+		driver_penalty_delete();
+		break;
+
 	case 'driver-delete' :
 		driver_delete();
 		break;
 
+	case 'vehicle-delete' :
+		vehicle_delete();
+		break;
+
+	case 'dv-violation-delete' :
+		dv_violation_delete();
+		break;
+
 
 	default :
+}
+
+function dv_violation_delete(){
+		$Id = $_GET["Id"];
+		driver_penalty()->delete("Id=$Id");
+
+		header('Location: driver-vehicle-violation.php?referenceId=' . $_GET["referenceId"] . '&type=' . $_GET["type"] .'&success=Deleted a violation');
+}
+
+
+function reset_password(){
+	$Id = $_GET["accountId"];
+	$role = $_GET["role"];
+
+	$six_digit_random_number = random_int(100000, 999999);
+
+	$model = account();
+	$model->obj["status"] = "Inactive";
+	$model->obj["password"] = $six_digit_random_number;
+	$model->update("Id=$Id");
+
+	header("Location: accounts.php?role=" . $role . "&success=You have reset the password");
 }
 
 function change_violation_status(){
@@ -49,18 +99,20 @@ function change_violation_status(){
 	$model->obj["status"] = $_GET["status"];
 	$model->update("Id=$pdId");
 
-	header('Location: driver-violation-detail.php?pdId=' . $pdId . '&success=You have changed status');
+	header('Location: violation-detail.php?pdId=' . $pdId . '&success=You have changed status');
 
 }
 
 function driver_violation_add(){
 	$violation_list = $_POST['violation'];
-	$driverId = $_POST['driverId'];
+	$referenceId = $_POST['referenceId'];
+	$type = $_POST['type'];
 
 	$model = driver_penalty();
 	$model->obj["dateAdded"] = "NOW()";
 	$model->obj["officerId"] = $_SESSION["user_session"]["Id"];
-	$model->obj["driverId"] = $driverId;
+	$model->obj["referenceId"] = $referenceId;
+	$model->obj["type"] = $type;
 	$model->create();
 
 	$getLastRecord = driver_penalty()->get("Id>0 order by Id desc limit 1");
@@ -72,8 +124,7 @@ function driver_violation_add(){
 		$model->create();
 	}
 
-
-	header('Location: driver-violation.php?driverId=' . $_POST["driverId"] . "&success=Violation successfully added");
+	header('Location: driver-vehicle-violation.php?referenceId=' . $_POST["referenceId"] . '&type='. $_POST["type"] . '&success=Violation successfully added');
 
 }
 
@@ -109,6 +160,7 @@ function account_save(){
 	$model->obj["username"] = $_POST["username"];
 	$model->obj["firstName"] = $_POST["firstName"];
 	$model->obj["lastName"] = $_POST["lastName"];
+	$model->obj["officerBadge"] = $_POST["officerBadge"];
 	$model->obj["role"] = $_POST["role"];
 
 	if ($_POST["form-type"] == "add") {
@@ -132,6 +184,46 @@ function account_delete(){
 
 	header('Location: accounts.php?role=' . $_GET["role"]);
 }
+function driver_delete(){
+	#Process to save to the database
+
+	$Id = $_GET["Id"];
+	driver()->delete("Id=$Id");
+
+	header('Location: drivers.php?success=You have deleted a driver');
+}
+function vehicle_delete(){
+	#Process to save to the database
+
+	$Id = $_GET["Id"];
+	vehicle()->delete("Id=$Id");
+
+	header('Location: vehicles.php?success=You have deleted a vehicle');
+}
+
+// function driver_penalty_delete(){
+// 	#Process to save to the database
+//
+// 	$dpId = $_GET["dpId"];
+// 	driver_penalty()->delete("Id=$dpId");
+//
+// 	// if ($_GET["type"]=="Driver") {
+// 	// 		header('Location: drivers.php');
+// 	// }
+// 	// if ($_GET["type"]=="Vehicle") {
+// 	// 		header('Location: vehicles.php');
+// 	// }
+// 	print_r($_GET);
+// }
+
+function zone_delete(){
+	#Process to save to the database
+
+	$Id = $_GET["Id"];
+	zone()->delete("Id=$Id");
+
+	header('Location: zone-list.php?success=Zone has been deleted');
+}
 
 
 
@@ -145,6 +237,25 @@ function driver_save(){
 	$model->obj["address"] = $_POST["address"];
 	$model->obj["birthday"] = $_POST["birthday"];
 	$model->obj["licenseNumber"] = $_POST["licenseNumber"];
+
+	if ($_POST["form-type"] == "add") {
+		$model->create();
+		$successMessage = "You have successfully added a new driver";
+	}
+
+	if ($_POST["form-type"] == "edit") {
+		$Id = $_POST["Id"];
+		$model->update("Id=$Id");
+		$successMessage = "You have successfully modified a driver";
+	}
+
+	header('Location: drivers.php?success=' . $successMessage);
+}
+
+function vehicle_save(){
+	#Process to save to the database
+
+	$model = vehicle();
 	$model->obj["plateNumber"] = $_POST["plateNumber"];
 	$model->obj["color"] = $_POST["color"];
 	$model->obj["brand"] = $_POST["brand"];
@@ -161,7 +272,7 @@ function driver_save(){
 		$successMessage = "You have successfully modified a driver";
 	}
 
-	header('Location: drivers.php?success=' . $successMessage);
+	header('Location: vehicles.php?success=' . $successMessage);
 }
 
 
@@ -183,7 +294,28 @@ function violation_save(){
 		$successMessage = "You have successfully modified a violation";
 	}
 
-	header('Location: penalties.php?success=' . $successMessage);
+	header('Location: violation-list.php?success=' . $successMessage);
+}
+
+
+function zone_save(){
+	#Process to save to the database
+
+	$model = zone();
+	$model->obj["name"] = $_POST["name"];
+
+	if ($_POST["form-type"] == "add") {
+		$model->create();
+		$successMessage = "You have successfully added a new zone";
+	}
+
+	if ($_POST["form-type"] == "edit") {
+		$Id = $_POST["Id"];
+		$model->update("Id=$Id");
+		$successMessage = "You have successfully modified a zone";
+	}
+
+	header('Location: zone-list.php?success=' . $successMessage);
 }
 
 function violation_delete(){
@@ -193,69 +325,4 @@ function violation_delete(){
 	violation()->delete("Id=$Id");
 
 	header('Location: violation-list.php?success=You have successfully deleted this violation');
-}
-
-function driver_delete(){
-	#Process to save to the database
-
-	$Id = $_GET["Id"];
-	driver()->delete("Id=$Id");
-
-	header('Location: drivers.php?success=You have successfully deleted this driver');
-}
-
-
-
-function symptom_save(){
-	#Process to save to the database
-
-	$model = symptom();
-	$model->obj["name"] = $_POST["name"];
-
-	if ($_POST["form-type"] == "add") {
-		$model->create();
-	}
-
-	if ($_POST["form-type"] == "edit") {
-		$Id = $_POST["Id"];
-		$model->update("Id=$Id");
-	}
-
-	header('Location: symptoms.php');
-}
-
-function symptom_delete(){
-	#Process to save to the database
-
-	$Id = $_GET["Id"];
-	symptom()->delete("Id=$Id");
-
-	header('Location: symptoms.php');
-}
-
-function specialty_save(){
-	#Process to save to the database
-
-	$model = specialty();
-	$model->obj["name"] = $_POST["name"];
-
-	if ($_POST["form-type"] == "add") {
-		$model->create();
-	}
-
-	if ($_POST["form-type"] == "edit") {
-		$Id = $_POST["Id"];
-		$model->update("Id=$Id");
-	}
-
-	header('Location: specialty.php');
-}
-
-function specialty_delete(){
-	#Process to save to the database
-
-	$Id = $_GET["Id"];
-	specialty()->delete("Id=$Id");
-
-	header('Location: specialty.php');
 }

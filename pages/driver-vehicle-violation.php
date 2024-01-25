@@ -2,17 +2,38 @@
   $ROOT_DIR="../";
   include $ROOT_DIR . "templates/header.php";
 
+  $referenceId = $_GET["referenceId"];
+  $type = $_GET["type"];
+  if ($type=="Driver") {
+    $driver = driver()->get("Id=$referenceId");
+  }
+  if ($type=="Vehicle") {
+    $vehicle = vehicle()->get("Id=$referenceId");
+  }
+
+
+  $status = get_query_string("status", "Pending");
+
+  $driver_penalty_list = driver_penalty()->list("referenceId=$referenceId and type='$type' and status='$status'");
   $violation_list = violation()->list();
+
+
+  $pendingActive = "";
+  $paidActive = "";
+
+  if ($status=="Pending") {
+    $pendingActive = "active";
+  }
+  if ($status=="Paid") {
+    $paidActive = "active";
+  }
 ?>
+
 
           <div class="widget-content searchable-container list">
             <div class="card card-body">
               <div class="row">
                 <div class="col-md-4 col-xl-3">
-                  <form class="position-relative">
-                    <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Specialty..." />
-                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-                  </form>
                 </div>
                 <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
                   <a href="javascript:void(0)" id="btn-add-contact" class="btn btn-info d-flex align-items-center">
@@ -24,23 +45,26 @@
 
             <!-- Modal -->
             <div class="modal fade" id="violationModal" tabindex="-1" role="dialog" aria-labelledby="addContactModalTitle" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                   <div class="modal-header d-flex align-items-center">
                     <h5 class="modal-title">Violation Form</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
-                  <form action="process.php?action=violation-save" id="addContactModalTitle" method="post">
+                  <form action="process.php?action=driver-violation-add" id="addContactModalTitle" method="post">
                   <div class="modal-body">
-                    <div class="add-contact-box">
-                      <div class="add-contact-content">
-                        <input type="hidden" name="Id" id="c-id" class="form-control" placeholder="Name" />
-                        <b>Name</b>
-                        <input type="text" name="name" id="c-name" class="form-control" placeholder="Name" required/>
-                        <b>Amount</b>
-                        <input type="number" step=".01" name="amount" id="c-amount" class="form-control" placeholder="Amount" required/>
+                    <input type="hidden" name="referenceId" value="<?=$referenceId;?>">
+                    <input type="hidden" name="type" value="<?=$type;?>">
+
+                      <b>Check violations:</b>
+                      <div class="row">
+                    <?php foreach ($violation_list as $row): ?>
+                      <div class="col-6">
+                          <input type="checkbox" name="violation[]" value="<?=$row->Id?>"> <?=$row->name;?> (<?=$row->amount;?>)
                       </div>
+                    <?php endforeach; ?>
                     </div>
+
                   </div>
                   <div class="modal-footer">
                     <button name="form-type" value="add" id="btn-add" class="btn btn-success rounded-pill px-4">Add</button>
@@ -52,12 +76,20 @@
               </div>
             </div>
             <div class="card card-body">
+              <ul class="nav nav-tabs">
+              <li class="nav-item">
+                <a class="nav-link <?=$pendingActive?>" aria-current="page" href="?referenceId=<?=$referenceId?>&type=<?=$type?>&status=Pending">Pending</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link <?=$paidActive?>" href="?referenceId=<?=$referenceId?>&type=<?=$type?>&status=Paid">Paid</a>
+              </li>
+            </ul>
               <div class="table-responsive">
                 <table class="table search-table align-middle text-nowrap">
                   <thead class="header-item">
-                    <th>Violation</th>
-                    <th>Price</th>
-                    <th>Total Violators</th>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Officer</th>
                     <th width="10%">Action</th>
                   </thead>
                   <tbody>
@@ -65,10 +97,8 @@
 
                     <?php
                     $count = 0;
-                    $totalViolations = 0;
-                    foreach ($violation_list as $row):
-                      $countViolation = penalty_item()->count("violationId=$row->Id");
-                      $totalViolations += $countViolation;
+                    foreach ($driver_penalty_list as $row):
+                      $officer = account()->get("Id=$row->officerId");
                       $count += 1;
                        ?>
 
@@ -77,7 +107,7 @@
                         <div class="d-flex align-items-center">
                           <div class="ms-3">
                             <div class="user-meta-info">
-                              <h6 class="user-name mb-0" data-id="<?=$row->Id;?>" data-name="<?=$row->name;?>" data-amount="<?=$row->amount;?>"><?=$count;?>. <?=$row->name;?></h6>
+                              <h6 class="user-name mb-0" data-id="<?=$row->Id;?>" data-name="<?=$row->name;?>" data-amount="<?=$row->amount;?>"><?=$count;?>. </h6>
                             </div>
                           </div>
                         </div>
@@ -86,26 +116,26 @@
                           <div class="d-flex align-items-center">
                             <div class="ms-3">
                               <div class="user-meta-info">
-                                <h6 class="user-name mb-0"><?=format_money($row->amount);?></h6>
+                                <h6 class="user-name mb-0"><?=$row->dateAdded;?></h6>
                               </div>
                             </div>
                           </div>
                         </td>
-                          <td>
-                            <div class="d-flex align-items-center">
-                              <div class="ms-3">
-                                <div class="user-meta-info">
-                                  <h6 class="user-name mb-0"><?=$countViolation?></h6>
-                                </div>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                              <div class="user-meta-info">
+                                <h6 class="user-name mb-0"><?=$officer->firstName;?> <?=$officer->lastName;?></h6>
                               </div>
                             </div>
-                          </td>
+                          </div>
+                        </td>
                       <td>
                         <div class="action-btn">
-                          <a href="javascript:void(0)" class="text-info btn btn-primary edit">
+                          <a href="violation-detail.php?pdId=<?=$row->Id;?>" class="text-info btn btn-primary">
                             View
                           </a>
-                          <a href="process.php?action=violation-delete&Id=<?=$row->Id?>" class="text-dark ms-2 btn btn-danger">
+                          <a href="process.php?action=dv-violation-delete&Id=<?=$row->Id?>&referenceId=<?=$referenceId?>&type=<?=$row->type?>" class="text-dark ms-2 btn btn-danger">
                             Delete
                           </a>
                         </div>
@@ -114,12 +144,6 @@
                     <!-- end row -->
 
                   <?php endforeach; ?>
-                  <tr>
-                    <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                          <td>Total: <?=$totalViolations;?></td>
-                            <td>&nbsp;</td>
-                  </tr>
                   </tbody>
                 </table>
               </div>

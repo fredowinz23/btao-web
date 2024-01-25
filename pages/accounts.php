@@ -2,11 +2,13 @@
   $ROOT_DIR="../";
   include $ROOT_DIR . "templates/header.php";
 
-  $role = $_GET['role'];
+  $role = get_query_string("role", "Admin");
   $account_list = account()->list("role='$role'");
+
 ?>
 
-<br>
+
+<h2><?=$role?> Accounts</h2>
 
       <div class="widget-content searchable-container list">
         <!-- --------------------- start Contact ---------------- -->
@@ -32,13 +34,36 @@
             <div class="modal-content">
               <div class="modal-header d-flex align-items-center">
                 <h5 class="modal-title"><?=$role;?></h5>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form action="process.php?action=account-save" id="addContactModalTitle" method="post">
               <div class="modal-body">
                 <div class="add-contact-box">
                   <div class="add-contact-content">
+
+                      <?php if ($role=="Volunteer"): ?>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="mb-3 contact-name">
+                              <select class="form-control" name="volunteerId" required>
+                                <option value="">--Select Volunteer--</option>
+                                <?php foreach ($volunteer_list as $row):
+                                  $checkExist = account()->count("volunteerId=$row->Id");
+                                  if ($checkExist==0) {
+                                  ?>
+                                  <option value="<?=$row->Id?>"><?=$row->firstName;?> <?=$row->lastName;?></option>
+                                <?php
+                              }
+                            endforeach; ?>
+                              </select>
+                            </div>
+                          </div>
+                          </div>
+                        <?php endif; ?>
+
                     <div class="row">
+
                       <div class="col-md-4">
                         <div class="mb-3 contact-name">
                           <input type="hidden" name="Id" id="c-id"/>
@@ -54,18 +79,45 @@
                           <span class="validation-text text-danger"></span>
                         </div>
                       </div>
-                      <div class="col-md-6">
-                        <div class="mb-3 contact-name">
-                          <input type="text" name="firstName" id="c-firstname" class="form-control" placeholder="First Name" required/>
-                          <span class="validation-text text-danger"></span>
-                        </div>
+                      <div class="col-md-4 col-password" id="reset-password">
+
+                        <a href="" id="reset-password-link" class="btn btn-info">Forget Password</a>
                       </div>
-                      <div class="col-md-6">
-                        <div class="mb-3 contact-name">
-                          <input type="text" name="lastName" id="c-lastname" class="form-control" placeholder="Last Name" required/>
-                          <span class="validation-text text-danger"></span>
-                        </div>
+
+
+                      <?php if ($role=="Officer"): ?>
+
+                            <div class="col-md-6">
+                              <div class="mb-3 contact-name">
+                                <input type="text" name="officerBadge" id="c-officerBadge" class="form-control" placeholder="Badge Number" required/>
+                                <span class="validation-text text-danger"></span>
+                              </div>
+                            </div>
+
+                    <?php else: ?>
+                        <input type="hidden" name="officerBadge" value="">
+                    <?php endif; ?>
+
+
                       </div>
+
+                      <div class="row">
+
+                          <div class="col-md-6">
+                            <div class="mb-3 contact-name">
+                              <input type="text" name="firstName" id="c-firstname" class="form-control" placeholder="First Name" required/>
+                              <span class="validation-text text-danger"></span>
+                            </div>
+                          </div>
+
+
+
+                          <div class="col-md-6">
+                            <div class="mb-3 contact-name">
+                              <input type="text" name="lastName" id="c-lastname" class="form-control" placeholder="Last Name" required/>
+                              <span class="validation-text text-danger"></span>
+                            </div>
+                          </div>
                     </div>
                   </div>
                 </div>
@@ -73,7 +125,7 @@
               <div class="modal-footer">
                 <button name="form-type" value="add" id="btn-add" class="btn btn-success rounded-pill px-4">Add</button>
                 <button name="form-type" value="edit" id="btn-edit" class="btn btn-success rounded-pill px-4">Save</button>
-                <button class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal"> Discard </button>
+                <button type="button" class="btn btn-danger rounded-pill px-4"  data-dismiss="modal" aria-label="Close"> Discard </button>
               </div>
             </form>
             </div>
@@ -106,6 +158,9 @@
                           data-username="<?=$row->username;?>"
                            data-firstName="<?=$row->firstName;?>"
                            data-lastName="<?=$row->lastName;?>"
+                           data-password="<?=$row->password;?>"
+                           data-officerBadge="<?=$row->officerBadge;?>"
+                           data-status="<?=$row->status;?>"
                           ><?=$count;?>. <?=$row->username;?></h6>
                         </div>
                       </div>
@@ -142,4 +197,75 @@
 
       <?php include $ROOT_DIR . "templates/footer.php"; ?>
 
-      <script src="<?=$ROOT_DIR;?>pages/js/accounts.js"></script>
+      <script type="text/javascript">
+      $(function () {
+
+          $("#input-search").on("keyup", function () {
+            var rex = new RegExp($(this).val(), "i");
+            $(".search-table .search-items:not(.header-item)").hide();
+            $(".search-table .search-items:not(.header-item)")
+              .filter(function () {
+                return rex.test($(this).text());
+              })
+              .show();
+          });
+
+          $("#btn-add-contact").on("click", function (event) {
+
+            var $_username = document.getElementById("c-username");
+            $_username.value = "";
+
+            var $_generatedpw = Math.floor(Math.random()*899999+100000);
+
+            var $_password = document.getElementById("c-password");
+            $_password.value = $_generatedpw;
+
+            var $_dpassword = document.getElementById("c-display-password");
+            $_dpassword.value = $_generatedpw
+
+            $("#addContactModal #reset-password").hide();
+
+            $("#addContactModal #btn-add").show();
+            $("#addContactModal #btn-edit").hide();
+            $("#addContactModal").modal("show");
+          });
+
+
+          function editContact() {
+            $(".edit").on("click", function (event) {
+              $("#addContactModal #btn-add").hide();
+              $("#addContactModal #btn-edit").show();
+
+              var resetPassword = document.getElementById("reset-password-link");
+
+              // Get Parents
+              var getParentItem = $(this).parents(".search-items");
+              var getModal = $("#addContactModal");
+
+              // Get List Item Fields
+              var $_name = getParentItem.find(".user-name");
+              // Set Modal Field's Value
+              getModal.find("#c-id").val($_name.attr("data-id"));
+              getModal.find("#c-username").val($_name.attr("data-username"));
+              getModal.find("#c-firstName").val($_name.attr("data-firstName"));
+              getModal.find("#c-lastName").val($_name.attr("data-lastName"));
+              getModal.find("#c-officerBadge").val($_name.attr("data-officerBadge"));
+
+              resetPassword.href = "process.php?action=reset-password&role=<?=$role?>&accountId=" + $_name.attr("data-id");
+
+              $("#addContactModal #reset-password").show();
+              if ($_name.attr("data-status")=="Inactive") {
+                getModal.find("#c-display-password").val($_name.attr("data-password"));
+              }
+              else{
+                getModal.find("#c-display-password").val("Not shown for security");
+              }
+
+              $("#addContactModal").modal("show");
+            });
+          }
+
+          editContact();
+
+        });
+  </script>

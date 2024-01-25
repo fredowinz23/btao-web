@@ -14,6 +14,12 @@ function driver() {
 	return $crud;
 }
 
+function vehicle() {
+	$crud = new CRUD;
+	$crud->table = "vehicle";
+	return $crud;
+}
+
 function violation() {
 	$crud = new CRUD;
 	$crud->table = "violation";
@@ -32,9 +38,9 @@ function penalty_item() {
 	return $crud;
 }
 //TEstt
-function contact() {
+function zone() {
 	$crud = new CRUD;
-	$crud->table = "contact";
+	$crud->table = "zone";
 	return $crud;
 }
 

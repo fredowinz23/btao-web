@@ -2,27 +2,37 @@
   $ROOT_DIR="../";
   include $ROOT_DIR . "templates/header.php";
 
+  $dateNow = date("Y-m-d");
+  $from = get_query_string("from", $dateNow);
+  $to = get_query_string("to", $dateNow);
   $violation_list = violation()->list();
 ?>
 
 
-<h2>Violation Option List</h2>
+<h2>Violation Per Category</h2>
 
           <div class="widget-content searchable-container list">
-            <div class="card card-body">
-              <div class="row">
-                <div class="col-md-4 col-xl-3">
-                  <form class="position-relative">
-                    <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Specialty..." />
-                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-                  </form>
-                </div>
-                <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-                  <a href="javascript:void(0)" id="btn-add-contact" class="btn btn-info d-flex align-items-center">
-                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Violation
-                  </a>
+
+            <div class="card">
+
+              <form action="" method="get">
+
+              <div class="card-body">
+                <div class="row">
+                  <div class="col">
+                    <input type="date" name="from" value="<?=$from?>" class="form-control" required>
+                  </div>
+                    <div class="col">
+                      <input type="date" name="to" value="<?=$to?>" class="form-control" required>
+                    </div>
+                      <div class="col">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                      </div>
                 </div>
               </div>
+
+            </form>
+
             </div>
 
             <!-- Modal -->
@@ -58,16 +68,19 @@
               <div class="table-responsive">
                 <table class="table search-table align-middle text-nowrap">
                   <thead class="header-item">
-                    <th>Violation</th>
-                    <th>Price</th>
-                    <th width="10%">Action</th>
+                    <th>#</th>
+                      <th>Violation</th>
+                    <th width="100">Total Violators</th>
                   </thead>
                   <tbody>
                     <!-- start row -->
 
                     <?php
                     $count = 0;
+                    $totalViolations = 0;
                     foreach ($violation_list as $row):
+                      $countViolation = penalty_item()->count("violationId=$row->Id and (dateAdded>='$from' and dateAdded<='$to')");
+                      $totalViolations += $countViolation;
                       $count += 1;
                        ?>
 
@@ -76,7 +89,7 @@
                         <div class="d-flex align-items-center">
                           <div class="ms-3">
                             <div class="user-meta-info">
-                              <h6 class="user-name mb-0" data-id="<?=$row->Id;?>" data-name="<?=$row->name;?>" data-amount="<?=$row->amount;?>"><?=$count;?>. <?=$row->name;?></h6>
+                              <h6 class="user-name mb-0" data-id="<?=$row->Id;?>" data-name="<?=$row->name;?>" data-amount="<?=$row->amount;?>"><?=$count;?>.</h6>
                             </div>
                           </div>
                         </div>
@@ -85,25 +98,29 @@
                           <div class="d-flex align-items-center">
                             <div class="ms-3">
                               <div class="user-meta-info">
-                                <h6 class="user-name mb-0"><?=format_money($row->amount);?></h6>
+                                <h6 class="user-name mb-0" ><?=$row->name;?></h6>
                               </div>
                             </div>
                           </div>
                         </td>
-                      <td>
-                        <div class="action-btn">
-                          <a href="javascript:void(0)" class="text-info btn btn-primary edit">
-                            View
-                          </a>
-                          <a href="process.php?action=violation-delete&Id=<?=$row->Id?>" class="text-dark ms-2 btn btn-danger">
-                            Delete
-                          </a>
-                        </div>
-                      </td>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <div class="ms-3">
+                                <div class="user-meta-info">
+                                  <h6 class="user-name mb-0"><?=$countViolation?></h6>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
                     </tr>
                     <!-- end row -->
 
                   <?php endforeach; ?>
+                  <tr>
+                    <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                          <td>Total: <?=$totalViolations;?></td>
+                  </tr>
                   </tbody>
                 </table>
               </div>
@@ -115,6 +132,22 @@
 
 
 <script type="text/javascript">
+
+Qualtrics.SurveyEngine.addOnload(function() {
+    var table = document.querySelector('table');
+    var rows = Array.from(table.querySelectorAll('tr'));
+
+    rows.sort(function(a, b) {
+        var scoreA = parseFloat(a.cells[2].textContent);
+        var scoreB = parseFloat(b.cells[2].textContent);
+        return scoreB - scoreA;
+    });
+
+    rows.forEach(function(row) {
+        table.appendChild(row);
+    });
+});
+
 $(function () {
 
     $("#input-search").on("keyup", function () {

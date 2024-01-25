@@ -11,6 +11,7 @@ $driverPenaltyId = $_POST["driverPenaltyId"];
 $model = penalty_item();
 $model->obj["violationId"] = $violationId;
 $model->obj["driverPenaltyId"] = $driverPenaltyId;
+$model->obj["dateAdded"] = "NOW()";
 $model->create();
 
 $success = true;

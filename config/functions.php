@@ -8,6 +8,11 @@ function get_query_string($keyword, $default){
 function format_money($value){
 	return number_format($value, 2, '.', ',');
 }
+function format_date($date){
+	$date=date_create($date);
+ 	return date_format($date,"M d, Y");
+}
+
 
 function char_limit($x, $length){
 	$result = $x;

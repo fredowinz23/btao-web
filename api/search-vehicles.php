@@ -11,13 +11,13 @@ if (isset($_POST["keyword"])) {
   $keyword = $_POST["keyword"];
   $success = true;
 
-  $driver_list = array();
+  $vehicle_list = array();
 
   if ($keyword!="") {
 
-    foreach (driver()->list("firstName like '%$keyword%' or lastName like '%$keyword%' or address like '%$keyword%' or licenseNumber like '%$keyword%'") as $row) {
-      $item = driver_interface($row);
-      array_push($driver_list, $item);
+    foreach (vehicle()->list("plateNumber like '%$keyword%' or color like '%$keyword%' or brand like '%$keyword%' or model like '%$keyword%'") as $row) {
+      $item = vehicle_interface($row);
+      array_push($vehicle_list, $item);
     }
   }
 
@@ -25,7 +25,7 @@ if (isset($_POST["keyword"])) {
 }
 
 $json["keyword"] = $_POST["keyword"];
-$json["driver_list"] = $driver_list;
+$json["vehicle_list"] = $vehicle_list;
 $json["success"] = $success;
 
 
